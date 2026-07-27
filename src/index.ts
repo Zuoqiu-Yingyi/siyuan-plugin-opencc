@@ -1,79 +1,76 @@
-/**
- * Copyright (C) 2023 Zuoqiu Yingyi
- * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- * 
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-import siyuan from "siyuan";
-
-import icon_opencc_convert from "./assets/symbols/icon-opencc-convert.symbol?raw";
+// Copyright (C) 2023 Zuoqiu Yingyi
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+// 
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import {
     Client,
-    type types,
 } from "@siyuan-community/siyuan-sdk";
+import siyuan from "siyuan";
+import { mount } from "svelte";
 
-import Settings from "./components/Settings.svelte";
-
-import {
-    FLAG_MOBILE,
-} from "@workspace/utils/env/front-end";
-import { Logger } from "@workspace/utils/logger";
-import { mergeIgnoreArray } from "@workspace/utils/misc/merge";
-import { Enum } from "@workspace/utils/misc/enum";
-import { fn__code } from "@workspace/utils/siyuan/text/span";
 import {
     range2HTML,
     replaceRangeWithHTML,
 } from "@workspace/utils/dom/range";
 import {
-    copyText
+    FLAG_MOBILE,
+} from "@workspace/utils/env/front-end";
+import { Logger } from "@workspace/utils/logger";
+import {
+    copyText,
 } from "@workspace/utils/misc/copy";
+import { Enum } from "@workspace/utils/misc/enum";
+import { mergeIgnoreArray } from "@workspace/utils/misc/merge";
 import {
-    updateBlockID
-} from "@workspace/utils/siyuan/dom";
-import {
-    isLeafNode
+    isLeafNode,
 } from "@workspace/utils/siyuan/block";
+import {
+    updateBlockID,
+} from "@workspace/utils/siyuan/dom";
 import {
     getBlockMenuContext,
     getSelectedMenuContext,
-    type IBlockMenuContext,
-    type ISelectedMenuContext,
+
 } from "@workspace/utils/siyuan/menu/block";
+import { fn__code } from "@workspace/utils/siyuan/text/span";
+
+import icon_opencc_convert from "./assets/symbols/icon-opencc-convert.symbol?raw";
+import {
+    DEFAULT_CONFIG,
+    DEFAULT_CUSTOM_DICTS,
+} from "./configs/default";
+import { convert, createConverter, Locale } from "./opencc";
+import { locale2lang } from "./opencc/lang";
+
+import Settings from "./components/Settings.svelte";
 
 import type {
     IClickBlockIconEvent,
     IClickEditorTitleIconEvent,
     IOpenMenuContentEvent,
 } from "@workspace/types/siyuan/events";
+import type { BlockMenuDetail, IBlockMenuContext, ISelectedMenuContext } from "@workspace/utils/siyuan/menu/block";
 
-import {
-    DEFAULT_CONFIG,
-    DEFAULT_CUSTOM_DICTS,
-} from "./configs/default";
-import type { I18N } from "./utils/i18n";
+import type { IConverterOptions } from "./opencc";
 import type { IConfig } from "./types/config";
 import type { IDict, IDicts } from "./types/dictionary";
-import { Locale, type IConverterOptions, convert, createConverter } from "./opencc";
-import { Language, locale2lang } from "./opencc/lang";
-import type { IProtyle } from "@workspace/types/siyuan/protyle";
-import type { BlockID } from "@workspace/types/siyuan";
+import type { I18N } from "./utils/i18n";
 
 export default class OpenCCPlugin extends siyuan.Plugin {
     static readonly GLOBAL_CONFIG_NAME = "global-config";
 
+    // @ts-expect-error ignore original type
     declare public readonly i18n: I18N;
 
     public readonly siyuan = siyuan;
@@ -95,7 +92,7 @@ export default class OpenCCPlugin extends siyuan.Plugin {
         this.SETTINGS_DIALOG_ID = `${this.name}-settings-dialog`;
     }
 
-    onload(): void {
+    public override onload(): void {
         // this.logger.debug(this);
 
         /* 注册图标 */
@@ -104,10 +101,10 @@ export default class OpenCCPlugin extends siyuan.Plugin {
         ].join(""));
 
         this.loadData(OpenCCPlugin.GLOBAL_CONFIG_NAME)
-            .then(config => {
+            .then((config) => {
                 this.config = mergeIgnoreArray(DEFAULT_CONFIG, config || {}) as IConfig;
             })
-            .catch(error => this.logger.error(error))
+            .catch((error) => this.logger.error(error))
             .finally(() => {
                 /* 划选文本菜单 */
                 this.eventBus.on("open-menu-content", this.openMenuContentEventListener);
@@ -118,28 +115,30 @@ export default class OpenCCPlugin extends siyuan.Plugin {
             });
     }
 
-    onLayoutReady(): void {
+    public override onLayoutReady(): void {
     }
 
-    onunload(): void {
+    public override onunload(): void {
         this.eventBus.off("open-menu-content", this.openMenuContentEventListener);
     }
 
-    openSetting(): void {
-        const that = this;
+    public override openSetting(): void {
         const dialog = new siyuan.Dialog({
             title: `${this.i18n.displayName} <code class="fn__code">${this.name}</code>`,
-            content: `<div id="${that.SETTINGS_DIALOG_ID}" class="fn__flex-column" />`,
+            content: `<div id="${this.SETTINGS_DIALOG_ID}" class="fn__flex-column" />`,
             width: FLAG_MOBILE ? "92vw" : "720px",
             height: FLAG_MOBILE ? undefined : "640px",
         });
-        const settings = new Settings({
-            target: dialog.element.querySelector(`#${that.SETTINGS_DIALOG_ID}`),
-            props: {
-                config: this.config,
-                plugin: this,
-            },
-        });
+        const target = dialog.element.querySelector(`#${this.SETTINGS_DIALOG_ID}`);
+        if (target) {
+            mount(Settings, {
+                target,
+                props: {
+                    config: this.config,
+                    plugin: this,
+                },
+            });
+        }
     }
 
     /* 重置插件配置 */
@@ -177,18 +176,18 @@ export default class OpenCCPlugin extends siyuan.Plugin {
 
     /**
      * 更新字典
-     * @param str 字典字符串, 每个映射使用 | 或 \n 分隔 @example "foo1 bar1|foo2 bar2\nfoo3 bar3|foo4 bar4"
-     * @param dict 字典对象
-     * @return 是否更新成功
+     * @param str - 字典字符串, 每个映射使用 `|` 或 `\n` 分隔 @example `foo1 bar1|foo2 bar2\nfoo3 bar3|foo4 bar4`
+     * @param dict - 字典对象
+     * @returns 是否更新成功
      */
     protected updateDict(str: string, dict: IDict): boolean {
         if (str !== dict.str) {
             const map = new Map<string, string>();
-            str.trim().split("\n").forEach(line => {
-                line.trim().split("|").forEach(field => {
+            str.trim().split("\n").forEach((line) => {
+                line.trim().split("|").forEach((field) => {
                     const tuple = field.trim().split(/\s+/);
                     if (tuple.length === 2) {
-                        map.set(tuple[0], tuple[1]);
+                        map.set(tuple[0]!, tuple[1]!);
                     }
                 });
             });
@@ -220,7 +219,7 @@ export default class OpenCCPlugin extends siyuan.Plugin {
         // this.logger.debug(e);
 
         const detail = e.detail;
-        const context = getBlockMenuContext(detail); // 获取块菜单上下文
+        const context = getBlockMenuContext(detail as BlockMenuDetail); // 获取块菜单上下文
         if (context) {
             this.buildMenu(
                 detail.menu,
@@ -232,16 +231,16 @@ export default class OpenCCPlugin extends siyuan.Plugin {
 
     /**
      * 构造菜单
-     * @param menu 菜单对象
-     * @param context 菜单上下文
-     * @param protyle 当前使用的 Protyle
+     * @param menu - 菜单对象
+     * @param context - 菜单上下文
+     * @param protyle - 当前使用的 Protyle
      */
     protected buildMenu(
-        menu: InstanceType<typeof siyuan.Menu>,
-        context: ISelectedMenuContext | IBlockMenuContext,
-        protyle: IProtyle,
+        menu: siyuan.subMenu,
+        context: IBlockMenuContext | ISelectedMenuContext,
+        protyle: siyuan.IProtyle,
     ): void {
-        const submenu: siyuan.IMenuItemOption[] = [];
+        const submenu: siyuan.IMenu[] = [];
 
         // 简体 => 繁体
         submenu.push({
@@ -301,9 +300,9 @@ export default class OpenCCPlugin extends siyuan.Plugin {
         });
 
         // 其他转换
-        const submenu1: siyuan.IMenuItemOption[] = [];
+        const submenu1: siyuan.IMenu[] = [];
         for (const from of Enum.values(Locale)) {
-            const submenu2: siyuan.IMenuItemOption[] = [];
+            const submenu2: siyuan.IMenu[] = [];
 
             for (const to of Enum.values(Locale)) {
                 const disabled = from === to;
@@ -350,26 +349,26 @@ export default class OpenCCPlugin extends siyuan.Plugin {
 
     /**
      * 构造次级菜单
-     * @param context 菜单上下文
-     * @param options 转换配置
-     * @param protyle 当前使用的 Protyle
-     * @param disabled 是否禁用
-     * @return 次级菜单
+     * @param context - 菜单上下文
+     * @param protyle - 当前使用的 Protyle
+     * @param options - 转换配置
+     * @param disabled - 是否禁用
+     * @returns 次级菜单
      */
     protected buildSubmenu(
-        context: ISelectedMenuContext | IBlockMenuContext,
-        protyle: IProtyle,
+        context: IBlockMenuContext | ISelectedMenuContext,
+        protyle: siyuan.IProtyle,
         options: IConverterOptions,
         disabled: boolean = false,
-    ): siyuan.IMenuItemOption[] {
-        const submenu: siyuan.IMenuItemOption[] = [];
+    ): siyuan.IMenu[] {
+        const submenu: siyuan.IMenu[] = [];
 
         const flag_select = ("range" in context);
         const flag_block = ("isDocumentBlock" in context);
         const flag_document = flag_block && context.isDocumentBlock;
 
         /* 复制转换结果 */
-        const copy = async (type: "plaintext" | "markdown" | "kramdown") => {
+        const copy = async (type: "kramdown" | "markdown" | "plaintext") => {
             const html = await this.getSelectedHTML(context, false);
             const result = (() => {
                 switch (type) {
@@ -392,10 +391,10 @@ export default class OpenCCPlugin extends siyuan.Plugin {
             else {
                 return false;
             }
-        }
+        };
 
         /* 插入整个转换结果 */
-        const insertWhole = async (type: "before" | "after") => {
+        const insertWhole = async (type: "after" | "before") => {
             const html = await this.getSelectedHTML(context, false);
             const result = convert(updateBlockID(html), options);
             return this.insertSelectedHTML(
@@ -403,10 +402,10 @@ export default class OpenCCPlugin extends siyuan.Plugin {
                 result,
                 type,
             );
-        }
+        };
 
         /* 插入每个叶子块的转换结果 */
-        const insertParts = async (type: "before" | "after") => {
+        const insertParts = async (type: "after" | "before") => {
             const html = await this.getSelectedHTML(context, false);
             const element = document.createElement("div");
             element.innerHTML = html;
@@ -438,7 +437,7 @@ export default class OpenCCPlugin extends siyuan.Plugin {
                 }
             }
             return true;
-        }
+        };
 
         /* 复制转换结果 (纯文本) */
         submenu.push({
@@ -535,11 +534,11 @@ export default class OpenCCPlugin extends siyuan.Plugin {
             icon: "iconCopy",
             label: this.i18n.menu.renameDocumentTitle.label,
             click: async () => {
-                const title = (protyle.title.editElement as HTMLDivElement).innerText;
-                const result = convert(title, options);
+                const title = (protyle.title!.editElement as HTMLDivElement).textContent;
+                const result = convert(title!, options);
                 this.client.renameDoc({
-                    notebook: protyle.notebookId,
-                    path: protyle.path,
+                    notebook: protyle.notebookId!,
+                    path: protyle.path!,
                     title: result,
                 });
             },
@@ -551,23 +550,23 @@ export default class OpenCCPlugin extends siyuan.Plugin {
 
     /**
      * 获取选中内容的 HTML
-     * @param context 上下文
-     * @param split 是否分割多个块
+     * @param context - 上下文
+     * @param split - 是否分割多个块
      * @returns HTML/HTMLs
      */
     protected async getSelectedHTML(
-        context: ISelectedMenuContext | IBlockMenuContext,
+        context: IBlockMenuContext | ISelectedMenuContext,
         split: false,
     ): Promise<string>;
     protected async getSelectedHTML(
-        context: ISelectedMenuContext | IBlockMenuContext,
+        context: IBlockMenuContext | ISelectedMenuContext,
         split: true,
     ): Promise<string[]>;
     protected async getSelectedHTML(
-        context: ISelectedMenuContext | IBlockMenuContext,
+        context: IBlockMenuContext | ISelectedMenuContext,
         split: boolean = false,
     ): Promise<string | string[]> {
-        var html: string;
+        let html: string;
         if ("range" in context) { // 划选行内文本
             html = range2HTML(context.range);
         }
@@ -580,26 +579,28 @@ export default class OpenCCPlugin extends siyuan.Plugin {
             for (const block of context.blocks) {
                 htmls.push(block.element.outerHTML);
             }
-            if (split) return htmls;
+            if (split)
+                return htmls;
             else return htmls.join("");
         }
-        if (split) return [html];
+        if (split)
+            return [html];
         else return html;
     }
 
     /**
      * 更新选中内容的 HTML
-     * @param context 上下文
-     * @param htmls HTML
-     * @return 是否更新成功
+     * @param context - 上下文
+     * @param htmls - HTML
+     * @returns 是否更新成功
      */
     protected async updateSelectedHTML(
-        context: ISelectedMenuContext | IBlockMenuContext,
+        context: IBlockMenuContext | ISelectedMenuContext,
         htmls: string | string[],
     ): Promise<boolean> {
-        var html: string;
+        let html: string | undefined;
         if (Array.isArray(htmls) && htmls.length === 1) {
-            html = htmls[0];
+            html = htmls[0]!;
         }
         else if (typeof htmls === "string") {
             html = htmls as string;
@@ -633,7 +634,7 @@ export default class OpenCCPlugin extends siyuan.Plugin {
             else if (Array.isArray(htmls) && context.blocks.length === htmls.length) {
                 await Promise.all(context.blocks.map((block, index) => this.client.updateBlock({
                     id: block.id,
-                    data: htmls[index],
+                    data: htmls[index]!,
                     dataType: "dom",
                 })));
                 return true;
@@ -644,15 +645,15 @@ export default class OpenCCPlugin extends siyuan.Plugin {
 
     /**
      * 插入选中内容的 HTML
-     * @param context 上下文
-     * @param html HTML
-     * @param position 插入位置
-     * @return 是否插入成功
+     * @param context - 上下文
+     * @param html - HTML
+     * @param position - 插入位置
+     * @returns 是否插入成功
      */
     protected async insertSelectedHTML(
-        context: ISelectedMenuContext | IBlockMenuContext,
+        context: IBlockMenuContext | ISelectedMenuContext,
         html: string,
-        position: "before" | "after",
+        position: "after" | "before",
     ): Promise<boolean> {
         if ("range" in context) { // 划选行内文本
             switch (position) {
@@ -698,14 +699,14 @@ export default class OpenCCPlugin extends siyuan.Plugin {
             switch (position) {
                 case "before": // 插入至第一个块的上方
                     await this.client.insertBlock({
-                        nextID: context.blocks.at(0).id,
+                        nextID: context.blocks.at(0)!.id,
                         data: html,
                         dataType: "dom",
                     });
                     return true;
                 case "after": // 插入最后一个块的下方
                     await this.client.insertBlock({
-                        previousID: context.blocks.at(-1).id,
+                        previousID: context.blocks.at(-1)!.id,
                         data: html,
                         dataType: "dom",
                     });
