@@ -1,0 +1,23 @@
+package.json
+  s_9d03cf873d79d4::t_fedf77ab5291a5 4
+public/plugin.json
+  s_9d03cf873d79d4::t_c792b390b28d4e 5
+release-please-config.json
+  s_9d03cf873d79d4::t_5f4af782533e14 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.38-trip",
+  "base_commit_sha": "0411253a4ae993d29c383bf3de49cad869ad0976",
+  "prompts": {},
+  "sessions": {
+    "s_9d03cf873d79d4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e5f82cae-8724-4ede-9004-b62a5f343c9e",
+        "model": "claude-glm-5.2"
+      },
+      "human_author": "Yingyi / 颖逸 <49649786+Zuoqiu-Yingyi@users.noreply.github.com>"
+    }
+  }
+}
