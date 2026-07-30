@@ -343,7 +343,7 @@ export default class OpenCCPlugin extends siyuan.Plugin {
             submenu,
             icon: "icon-opencc-convert",
             label: this.i18n.displayName,
-            accelerator: this.name,
+            accelerator: fn__code(this.name),
         });
     }
 
