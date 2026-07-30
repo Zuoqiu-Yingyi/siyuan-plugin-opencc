@@ -12,7 +12,7 @@
 [![GitHub 发行版本下载次数](https://img.shields.io/github/downloads/Zuoqiu-Yingyi/siyuan-plugin-opencc/total?style=flat-square)](https://github.com/Zuoqiu-Yingyi/siyuan-plugin-opencc/releases)
 ---
 
-简体中文 \| [繁体中文](./README_zh_CHT.md) \| [English](./README.md)
+简体中文 \| [繁体中文](./README.zh-TW.md) \| [English](./README.md)
 
 ---
 

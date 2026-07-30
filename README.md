@@ -18,7 +18,7 @@
 
 ## USER GUIDE
 
-[简体中文](./public/README_zh_CN.md) \| [繁体中文](./public/README_zh_CHT.md) \| [English](./public/README.md)
+[简体中文](./public/README.zh-CN.md) \| [繁体中文](./public/README.zh-TW.md) \| [English](./public/README.md)
 
 ## DEVELOPER GUIDE
 
