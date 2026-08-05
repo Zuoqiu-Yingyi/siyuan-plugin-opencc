@@ -92,7 +92,7 @@ export default class OpenCCPlugin extends siyuan.Plugin {
         this.SETTINGS_DIALOG_ID = `${this.name}-settings-dialog`;
     }
 
-    public override onload(): void {
+    public override async onload(): Promise<void> {
         // this.logger.debug(this);
 
         /* 注册图标 */
@@ -100,19 +100,20 @@ export default class OpenCCPlugin extends siyuan.Plugin {
             icon_opencc_convert,
         ].join(""));
 
-        this.loadData(OpenCCPlugin.GLOBAL_CONFIG_NAME)
-            .then((config) => {
-                this.config = mergeIgnoreArray(DEFAULT_CONFIG, config || {}) as IConfig;
-            })
-            .catch((error) => this.logger.error(error))
-            .finally(() => {
-                /* 划选文本菜单 */
-                this.eventBus.on("open-menu-content", this.openMenuContentEventListener);
-                /* 非文档块菜单 */
-                this.eventBus.on("click-blockicon", this.blockMenuEventListener);
-                /* 文档块菜单 */
-                this.eventBus.on("click-editortitleicon", this.blockMenuEventListener);
-            });
+        try {
+            this.config = mergeIgnoreArray(DEFAULT_CONFIG, await this.loadData(OpenCCPlugin.GLOBAL_CONFIG_NAME) || {}) as IConfig;
+        }
+        catch (error) {
+            this.logger.error(error);
+        }
+        finally {
+            /* 划选文本菜单 */
+            this.eventBus.on("open-menu-content", this.openMenuContentEventListener);
+            /* 非文档块菜单 */
+            this.eventBus.on("click-blockicon", this.blockMenuEventListener);
+            /* 文档块菜单 */
+            this.eventBus.on("click-editortitleicon", this.blockMenuEventListener);
+        }
     }
 
     public override onLayoutReady(): void {
