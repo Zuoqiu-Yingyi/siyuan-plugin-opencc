@@ -18,6 +18,6 @@
         "@workspace/utils": "workspace:^"
     },
     "devDependencies": {
-        "opencc-js": "^1.4.1"
+        "opencc-js": "^1.4.2"
     }
 }
