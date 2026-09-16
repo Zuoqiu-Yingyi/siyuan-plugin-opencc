@@ -146,245 +146,258 @@
 <Panels
     focus={panels_focus_key}
     {panels}
-    let:focus={focusPanel}
 >
-    <!-- 常规设置面板 -->
-    <Panel display={panels[0]?.key === focusPanel}>
-        <!-- 重置设置 -->
-        <Item
-            text={i18n.settings.generalSettings.reset.description}
-            title={i18n.settings.generalSettings.reset.title}
-        >
-            <Input
-                slot="input"
-                settingKey="Reset"
-                settingValue={i18n.settings.generalSettings.reset.text}
-                type={ItemType.button}
-                on:clicked={resetOptions}
-            />
-        </Item>
-    </Panel>
-
-    <!-- 转换设置面板 -->
-    <Panel display={panels[1]?.key === focusPanel}>
-        <Tabs
-            focus={convert_settings_tabs_focus_key}
-            tabs={tabs.convert}
-            let:focus={focusTab}
-        >
-            <!-- 标签页 1 - 全局设置 -->
-            <div
-                class:fn__none={tabs.convert[0]?.key !== focusTab}
-                data-type={tabs.convert[0]?.name}
+    {#snippet children(focusPanel)}
+        <!-- 常规设置面板 -->
+        <Panel display={panels[0]?.key === focusPanel}>
+            <!-- 重置设置 -->
+            <Item
+                text={i18n.settings.generalSettings.reset.description}
+                title={i18n.settings.generalSettings.reset.title}
             >
-                <!-- 全局扩展词典 -->
-                <Item
-                    block={true}
-                    text={i18n.settings.options.dictionary.description}
-                    title={i18n.settings.convertSettings.globalTab.dictionary.title}
-                >
+                {#snippet input()}
                     <Input
-                        slot="input"
-                        block={true}
-                        placeholder={i18n.settings.options.dictionary.placeholder}
-                        settingKey="dictionary"
-                        settingValue={config.opencc.dict}
-                        type={ItemType.textarea}
-                        on:changed={async (e) => {
-                            config.opencc.dict = e.detail.value;
-                            await updated();
-                        }}
+                        onClicked={resetOptions}
+                        settingKey="Reset"
+                        settingValue={i18n.settings.generalSettings.reset.text}
+                        type={ItemType.button}
                     />
-                </Item>
-            </div>
+                {/snippet}
+            </Item>
+        </Panel>
 
-            <!-- 标签页 2 - 简→繁 -->
-            <div
-                class:fn__none={tabs.convert[1]?.key !== focusTab}
-                data-type={tabs.convert[1]?.name}
+        <!-- 转换设置面板 -->
+        <Panel display={panels[1]?.key === focusPanel}>
+            <Tabs
+                focus={convert_settings_tabs_focus_key}
+                tabs={tabs.convert}
             >
-                <!-- 原始文本类型 -->
-                <Item
-                    text={i18n.settings.options.sourceTextType.description}
-                    title={i18n.settings.options.sourceTextType.title}
-                >
-                    <Input
-                        slot="input"
-                        options={simplified_options}
-                        settingKey="s2t.from"
-                        settingValue={config.opencc.s2t.from}
-                        type={ItemType.select}
-                        on:changed={async (e) => {
-                            config.opencc.s2t.from = e.detail.value;
-                            await updated();
-                        }}
-                    />
-                </Item>
+                {#snippet children(focusTab)}
+                    <!-- 标签页 1 - 全局设置 -->
+                    <div
+                        class:fn__none={tabs.convert[0]?.key !== focusTab}
+                        data-type={tabs.convert[0]?.name}
+                    >
+                        <!-- 全局扩展词典 -->
+                        <Item
+                            block={true}
+                            text={i18n.settings.options.dictionary.description}
+                            title={i18n.settings.convertSettings.globalTab.dictionary.title}
+                        >
+                            {#snippet input()}
+                                <Input
+                                    block={true}
+                                    onChanged={async (e) => {
+                                        config.opencc.dict = e.value;
+                                        await updated();
+                                    }}
+                                    placeholder={i18n.settings.options.dictionary.placeholder}
+                                    settingKey="dictionary"
+                                    settingValue={config.opencc.dict}
+                                    type={ItemType.textarea}
+                                />
+                            {/snippet}
+                        </Item>
+                    </div>
 
-                <!-- 目标文本类型 -->
-                <Item
-                    text={i18n.settings.options.targetTextType.description}
-                    title={i18n.settings.options.targetTextType.title}
-                >
-                    <Input
-                        slot="input"
-                        options={traditional_options}
-                        settingKey="s2t.to"
-                        settingValue={config.opencc.s2t.to}
-                        type={ItemType.select}
-                        on:changed={async (e) => {
-                            config.opencc.s2t.to = e.detail.value;
-                            await updated();
-                        }}
-                    />
-                </Item>
+                    <!-- 标签页 2 - 简→繁 -->
+                    <div
+                        class:fn__none={tabs.convert[1]?.key !== focusTab}
+                        data-type={tabs.convert[1]?.name}
+                    >
+                        <!-- 原始文本类型 -->
+                        <Item
+                            text={i18n.settings.options.sourceTextType.description}
+                            title={i18n.settings.options.sourceTextType.title}
+                        >
+                            {#snippet input()}
+                                <Input
+                                    onChanged={async (e) => {
+                                        config.opencc.s2t.from = e.value;
+                                        await updated();
+                                    }}
+                                    options={simplified_options}
+                                    settingKey="s2t.from"
+                                    settingValue={config.opencc.s2t.from}
+                                    type={ItemType.select}
+                                />
+                            {/snippet}
+                        </Item>
 
-                <!-- 扩展词典 -->
-                <Item
-                    block={true}
-                    text={i18n.settings.options.dictionary.description}
-                    title={i18n.settings.options.dictionary.title}
-                >
-                    <Input
-                        slot="input"
-                        block={true}
-                        placeholder={i18n.settings.options.dictionary.placeholder}
-                        settingKey="s2t.dictionary"
-                        settingValue={config.opencc.s2t.dict}
-                        type={ItemType.textarea}
-                        on:changed={async (e) => {
-                            config.opencc.s2t.dict = e.detail.value;
-                            await updated();
-                        }}
-                    />
-                </Item>
-            </div>
+                        <!-- 目标文本类型 -->
+                        <Item
+                            text={i18n.settings.options.targetTextType.description}
+                            title={i18n.settings.options.targetTextType.title}
+                        >
+                            {#snippet input()}
+                                <Input
+                                    onChanged={async (e) => {
+                                        config.opencc.s2t.to = e.value;
+                                        await updated();
+                                    }}
+                                    options={traditional_options}
+                                    settingKey="s2t.to"
+                                    settingValue={config.opencc.s2t.to}
+                                    type={ItemType.select}
+                                />
+                            {/snippet}
+                        </Item>
 
-            <!-- 标签页 3 - 繁→简 -->
-            <div
-                class:fn__none={tabs.convert[2]?.key !== focusTab}
-                data-type={tabs.convert[2]?.name}
-            >
-                <!-- 原始文本类型 -->
-                <Item
-                    text={i18n.settings.options.sourceTextType.description}
-                    title={i18n.settings.options.sourceTextType.title}
-                >
-                    <Input
-                        slot="input"
-                        options={traditional_options}
-                        settingKey="t2s.from"
-                        settingValue={config.opencc.t2s.from}
-                        type={ItemType.select}
-                        on:changed={async (e) => {
-                            config.opencc.t2s.from = e.detail.value;
-                            await updated();
-                        }}
-                    />
-                </Item>
+                        <!-- 扩展词典 -->
+                        <Item
+                            block={true}
+                            text={i18n.settings.options.dictionary.description}
+                            title={i18n.settings.options.dictionary.title}
+                        >
+                            {#snippet input()}
+                                <Input
+                                    block={true}
+                                    onChanged={async (e) => {
+                                        config.opencc.s2t.dict = e.value;
+                                        await updated();
+                                    }}
+                                    placeholder={i18n.settings.options.dictionary.placeholder}
+                                    settingKey="s2t.dictionary"
+                                    settingValue={config.opencc.s2t.dict}
+                                    type={ItemType.textarea}
+                                />
+                            {/snippet}
+                        </Item>
+                    </div>
 
-                <!-- 目标文本类型 -->
-                <Item
-                    text={i18n.settings.options.targetTextType.description}
-                    title={i18n.settings.options.targetTextType.title}
-                >
-                    <Input
-                        slot="input"
-                        options={simplified_options}
-                        settingKey="t2s.to"
-                        settingValue={config.opencc.t2s.to}
-                        type={ItemType.select}
-                        on:changed={async (e) => {
-                            config.opencc.t2s.to = e.detail.value;
-                            await updated();
-                        }}
-                    />
-                </Item>
+                    <!-- 标签页 3 - 繁→简 -->
+                    <div
+                        class:fn__none={tabs.convert[2]?.key !== focusTab}
+                        data-type={tabs.convert[2]?.name}
+                    >
+                        <!-- 原始文本类型 -->
+                        <Item
+                            text={i18n.settings.options.sourceTextType.description}
+                            title={i18n.settings.options.sourceTextType.title}
+                        >
+                            {#snippet input()}
+                                <Input
+                                    onChanged={async (e) => {
+                                        config.opencc.t2s.from = e.value;
+                                        await updated();
+                                    }}
+                                    options={traditional_options}
+                                    settingKey="t2s.from"
+                                    settingValue={config.opencc.t2s.from}
+                                    type={ItemType.select}
+                                />
+                            {/snippet}
+                        </Item>
 
-                <!-- 扩展词典 -->
-                <Item
-                    block={true}
-                    text={i18n.settings.options.dictionary.description}
-                    title={i18n.settings.options.dictionary.title}
-                >
-                    <Input
-                        slot="input"
-                        block={true}
-                        placeholder={i18n.settings.options.dictionary.placeholder}
-                        settingKey="t2s.dictionary"
-                        settingValue={config.opencc.t2s.dict}
-                        type={ItemType.textarea}
-                        on:changed={async (e) => {
-                            config.opencc.t2s.dict = e.detail.value;
-                            await updated();
-                        }}
-                    />
-                </Item>
-            </div>
+                        <!-- 目标文本类型 -->
+                        <Item
+                            text={i18n.settings.options.targetTextType.description}
+                            title={i18n.settings.options.targetTextType.title}
+                        >
+                            {#snippet input()}
+                                <Input
+                                    onChanged={async (e) => {
+                                        config.opencc.t2s.to = e.value;
+                                        await updated();
+                                    }}
+                                    options={simplified_options}
+                                    settingKey="t2s.to"
+                                    settingValue={config.opencc.t2s.to}
+                                    type={ItemType.select}
+                                />
+                            {/snippet}
+                        </Item>
 
-            <!-- 标签页 4 - 自定义转换 -->
-            <div
-                class:fn__none={tabs.convert[3]?.key !== focusTab}
-                data-type={tabs.convert[3]?.name}
-            >
-                <!-- 原始文本类型 -->
-                <Item
-                    text={i18n.settings.options.sourceTextType.description}
-                    title={i18n.settings.options.sourceTextType.title}
-                >
-                    <Input
-                        slot="input"
-                        options={full_options}
-                        settingKey="custom.from"
-                        settingValue={config.opencc.custom.from}
-                        type={ItemType.select}
-                        on:changed={async (e) => {
-                            config.opencc.custom.from = e.detail.value;
-                            await updated();
-                        }}
-                    />
-                </Item>
+                        <!-- 扩展词典 -->
+                        <Item
+                            block={true}
+                            text={i18n.settings.options.dictionary.description}
+                            title={i18n.settings.options.dictionary.title}
+                        >
+                            {#snippet input()}
+                                <Input
+                                    block={true}
+                                    onChanged={async (e) => {
+                                        config.opencc.t2s.dict = e.value;
+                                        await updated();
+                                    }}
+                                    placeholder={i18n.settings.options.dictionary.placeholder}
+                                    settingKey="t2s.dictionary"
+                                    settingValue={config.opencc.t2s.dict}
+                                    type={ItemType.textarea}
+                                />
+                            {/snippet}
+                        </Item>
+                    </div>
 
-                <!-- 目标文本类型 -->
-                <Item
-                    text={i18n.settings.options.targetTextType.description}
-                    title={i18n.settings.options.targetTextType.title}
-                >
-                    <Input
-                        slot="input"
-                        options={full_options}
-                        settingKey="custom.to"
-                        settingValue={config.opencc.custom.to}
-                        type={ItemType.select}
-                        on:changed={async (e) => {
-                            config.opencc.custom.to = e.detail.value;
-                            await updated();
-                        }}
-                    />
-                </Item>
+                    <!-- 标签页 4 - 自定义转换 -->
+                    <div
+                        class:fn__none={tabs.convert[3]?.key !== focusTab}
+                        data-type={tabs.convert[3]?.name}
+                    >
+                        <!-- 原始文本类型 -->
+                        <Item
+                            text={i18n.settings.options.sourceTextType.description}
+                            title={i18n.settings.options.sourceTextType.title}
+                        >
+                            {#snippet input()}
+                                <Input
+                                    onChanged={async (e) => {
+                                        config.opencc.custom.from = e.value;
+                                        await updated();
+                                    }}
+                                    options={full_options}
+                                    settingKey="custom.from"
+                                    settingValue={config.opencc.custom.from}
+                                    type={ItemType.select}
+                                />
+                            {/snippet}
+                        </Item>
 
-                <!-- 扩展词典 -->
-                <Item
-                    block={true}
-                    text={i18n.settings.options.dictionary.description}
-                    title={i18n.settings.options.dictionary.title}
-                >
-                    <Input
-                        slot="input"
-                        block={true}
-                        placeholder={i18n.settings.options.dictionary.placeholder}
-                        settingKey="custom.dictionary"
-                        settingValue={config.opencc.custom.dict}
-                        type={ItemType.textarea}
-                        on:changed={async (e) => {
-                            config.opencc.custom.dict = e.detail.value;
-                            await updated();
-                        }}
-                    />
-                </Item>
-            </div>
-        </Tabs>
-    </Panel>
+                        <!-- 目标文本类型 -->
+                        <Item
+                            text={i18n.settings.options.targetTextType.description}
+                            title={i18n.settings.options.targetTextType.title}
+                        >
+                            {#snippet input()}
+                                <Input
+                                    onChanged={async (e) => {
+                                        config.opencc.custom.to = e.value;
+                                        await updated();
+                                    }}
+                                    options={full_options}
+                                    settingKey="custom.to"
+                                    settingValue={config.opencc.custom.to}
+                                    type={ItemType.select}
+                                />
+                            {/snippet}
+                        </Item>
+
+                        <!-- 扩展词典 -->
+                        <Item
+                            block={true}
+                            text={i18n.settings.options.dictionary.description}
+                            title={i18n.settings.options.dictionary.title}
+                        >
+                            {#snippet input()}
+                                <Input
+                                    block={true}
+                                    onChanged={async (e) => {
+                                        config.opencc.custom.dict = e.value;
+                                        await updated();
+                                    }}
+                                    placeholder={i18n.settings.options.dictionary.placeholder}
+                                    settingKey="custom.dictionary"
+                                    settingValue={config.opencc.custom.dict}
+                                    type={ItemType.textarea}
+                                />
+                            {/snippet}
+                        </Item>
+                    </div>
+                {/snippet}
+            </Tabs>
+        </Panel>
+    {/snippet}
 </Panels>
 
 <style lang="less">
