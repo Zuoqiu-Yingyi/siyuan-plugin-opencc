@@ -1,0 +1,20 @@
+src/components/Settings.svelte
+  s_375e4a819920b7::t_735409690e3b48 160,194-197,219-222,238-241,259-262,284-287,303-306,324-327,349-352,368-371,389-392
+  s_375e4a819920b7::t_d7b378e31ce652 150-156,158,161-163,165-173,175-193,198-218,223-237,242-258,263-283,288-302,307-323,328-348,353-367,372-388,393-400
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.44-trip",
+  "base_commit_sha": "63e31eb3d99d5f2a2e6a3c9488254c953d9ebfe2",
+  "prompts": {},
+  "sessions": {
+    "s_375e4a819920b7": {
+      "agent_id": {
+        "tool": "chengxiaobang",
+        "id": "s_vmnj8i26q86q",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Yingyi / 颖逸 <49649786+Zuoqiu-Yingyi@users.noreply.github.com>"
+    }
+  }
+}
